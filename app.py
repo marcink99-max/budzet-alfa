@@ -1,5 +1,5 @@
 # =====================================================================
-# SYSTEM FINANSOWY: BudżetAlfa (v1.7 PRO z Tabelą Wydatków)
+# SYSTEM FINANSOWY: Budżet Domowy (v2.0 Excel Edition)
 # Stała aplikacja internetowa | Autor: Marcin
 # =====================================================================
 
@@ -9,56 +9,78 @@ import plotly.express as px
 import json
 
 # 1. KONFIGURACJA INTERFEJSU STRONY
-st.set_page_config(page_title="BudżetAlfa PRO", page_icon="💰", layout="wide")
+st.set_page_config(page_title="Budżet Domowy", page_icon="🏠", layout="wide")
 
 st.markdown("""
     <style>
-    .main-title { font-size: 38px !important; font-weight: bold; color: #1E3A8A; }
+    .main-title { font-size: 38px !important; font-weight: bold; color: #2E7D32; }
     .author-tag { font-size: 16px; color: #6B7280; font-style: italic; }
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<p class="main-title">💰 SYSTEM FINANSOWY: BudżetAlfa v1.7 PRO</p>', unsafe_allow_html=True)
+st.markdown('<p class="main-title">🏠 SYSTEM FINANSOWY: Budżet Domowy v2.0</p>', unsafe_allow_html=True)
 st.markdown('<p class="author-tag">Twórca i Główny Programista: Marcin</p>', unsafe_allow_html=True)
 st.write("---")
 
 # 2. SYSTEM ZAPISU I ODCZYTU DANYCH (PAMIĘĆ PROGRAMU)
 st.sidebar.header("💾 ZAPISZ / WCZYTAJ BUDŻET")
-wgrany_plik = st.sidebar.file_uploader("Masz zapisany budżet? Wgraj go tutaj:", type=["json"])
+wgrany_plik = st.sidebar.file_uploader("Wgraj swój plik budżetu:", type=["json"])
 
-domyslne = {
-    "imie": "Marcin", "przychod": 6000, "mieszkanie": 2300, 
-    "jedzenie": 1400, "rozrywka": 500, "transport": 400, "inne": 300
-}
+# Domyślna lista wydatków w stylu Excela na start
+domyslne_wydatki = [
+    {"Nazwa wydatku": "Telefon", "Kwota (PLN)": 30.0},
+    {"Nazwa wydatku": "Mieszkanie i opłaty", "Kwota (PLN)": 2300.0},
+    {"Nazwa wydatku": "Jedzenie", "Kwota (PLN)": 1400.0},
+]
+domyslny_przychod = 6000.0
+domyslne_imie = "Marcin"
 
 if wgrany_plik is not None:
     try:
         dane_z_pliku = json.load(wgrany_plik)
-        domyslne.update(dane_z_pliku)
-        st.sidebar.success("✅ Budżet wczytany pomyślnie!")
+        domyslny_przychod = dane_z_pliku.get("przychod", 6000.0)
+        domyslne_imie = dane_z_pliku.get("imie", "Marcin")
+        domyslne_wydatki = dane_z_pliku.get("wydatki", domyslne_wydatki)
+        st.sidebar.success("✅ Budżet wczytany!")
     except:
         st.sidebar.error("🚨 Błąd wczytywania pliku!")
 
-# 3. PANEL BOCZNY - WPROWADZANIE DANYCH WEJŚCIOWYCH
+# 3. PANEL BOCZNY - PODSTAWOWE USTAWIENIA
 st.sidebar.write("---")
-st.sidebar.subheader("⚙️ USTAWIENIA KWOT")
-imie_user = st.sidebar.text_input("Imię właściciela portfela:", value=domyslne["imie"])
-przychod = st.sidebar.number_input("Twój miesięczny przychód na rękę (PLN):", min_value=0, value=int(domyslne["przychod"]), step=100)
+st.sidebar.subheader("⚙️ PARAMETRY GŁÓWNE")
+imie_user = st.sidebar.text_input("Imię właściciela portfela:", value=domyslne_imie)
+przychod = st.sidebar.number_input("Twój miesięczny przychód na rękę (PLN):", min_value=0.0, value=float(domyslny_przychod), step=100.0)
 
-st.sidebar.write("---")
-st.sidebar.subheader("💸 TWOJE MIESIĘCZNE WYDATKI:")
-w_mieszkanie = st.sidebar.slider("🏠 Mieszkanie i opłaty:", 0, 10000, int(domyslne["mieszkanie"]), step=50)
-w_jedzenie = st.sidebar.slider("🛒 Jedzenie i chemia:", 0, 5000, int(domyslne["jedzenie"]), step=50)
-w_rozrywka = st.sidebar.slider("🎉 Rozrywka i przyjemności:", 0, 3000, int(domyslne["rozrywka"]), step=50)
-w_transport = st.sidebar.slider("🚗 Transport i paliwo:", 0, 3000, int(domyslne["transport"]), step=50)
-w_inne = st.sidebar.slider("🔮 Inne / Niespodziewane:", 0, 3000, int(domyslne["inne"]), step=50)
+# 4. PANEL GŁÓWNY - EDYTOR W STYLU EXCELA
+st.subheader("📋 Twoja Lista Wydatków (jak w Excelu)")
+st.caption("💡 Możesz klikać w komórki i zmieniać teksty oraz kwoty. Aby dodać nowy wydatek, kliknij ikonę '+' na dole tabeli. Aby usunąć, zaznacz wiersz i naciśnij Delete.")
 
-dane_do_zapisu = {
-    "imie": imie_user, "przychod": przychod, "mieszkanie": w_mieszkanie,
-    "jedzenie": w_jedzenie, "rozrywka": w_rozrywka, "transport": w_transport, "inne": w_inne
-}
+# Tworzymy obiekt DataFrame z domyślnych wydatków
+df_startowe = pd.DataFrame(domyslne_wydatki)
+
+# Profesjonalny edytor tabeli na żywo
+edytowana_tabela = st.data_editor(
+    df_startowe,
+    num_rows="dynamic", # Pozwala użytkownikowi na dodawanie/usuwanie wierszy przyciskiem "+"
+    use_container_width=True,
+    hide_index=True,
+    column_config={
+        "Nazwa wydatku": st.column_config.TextColumn("Nazwa wydatku", placeholder="np. Telefon, Paliwo, Kino", required=True),
+        "Kwota (PLN)": st.column_config.NumberColumn("Kwota (PLN)", min_value=0.0, format="%.2f zł", required=True)
+    }
+)
+
+# Konwersja edytowanych danych z powrotem do obliczeń
+lista_wydatkow_wynik = edytowana_tabela.to_dict(orient="records")
+suma_wydatkow = edytowana_tabela["Kwota (PLN)"].sum() if not edytowana_tabela.empty else 0.0
+
+# Obliczenia końcowe
+wolne_srodki = przychod - suma_wydatkow
+procent_oszczednosci = (wolne_srodki / przychod) * 100 if przychod > 0 else 0
+
+# Przygotowanie przycisku pobierania zaktualizowanego budżetu w panelu bocznym
+dane_do_zapisu = {"imie": imie_user, "przychod": przychod, "wydatki": lista_wydatkow_wynik}
 json_string = json.dumps(dane_do_zapisu)
-
 st.sidebar.write("---")
 st.sidebar.download_button(
     label="📥 Zapisz ten budżet (Pobierz plik)",
@@ -67,62 +89,44 @@ st.sidebar.download_button(
     mime="application/json"
 )
 
-# 4. RDZEŃ OBLICZENIOWY (MATEMATYKA PROGRAMU)
-suma_wydatkow = w_mieszkanie + w_jedzenie + w_rozrywka + w_transport + w_inne
-wolne_srodki = przychod - suma_wydatkow
-procent_oszczednosci = (wolne_srodki / przychod) * 100 if przychod > 0 else 0
+# ☕ SEKCYJKA ZAPŁATY KAWY W PANELU BOCZNYM
+st.sidebar.write("---")
+st.sidebar.subheader("☕ WESPRZYJ PROJEKT")
+st.sidebar.markdown("[👉 Postaw kawę Marcinowi](https://buycoffee.to)", unsafe_allow_html=True)
 
-# 5. PANEL GŁÓWNY - PODSUMOWANIE (METRYKI)
-st.subheader(f"📊 Kondycja Finansowa Użytkownika: {imie_user}")
+st.write("---")
+
+# 5. PANEL METRYK (PODSUMOWANIE CASHFLOW)
+st.subheader(f"📊 Stan Finansów: {imie_user}")
 col1, col2, col3 = st.columns(3)
-with col1: st.metric(label="💰 Stały Dochód", value=f"{przychod:,} PLN")
-with col2: st.metric(label="💸 Generowane Koszty", value=f"{suma_wydatkow:,} PLN")
+with col1: st.metric(label="💰 Stały Dochód", value=f"{przychod:,.2f} PLN")
+with col2: st.metric(label="💸 Suma Wydatków z Tabeli", value=f"{suma_wydatkow:,.2f} PLN")
 with col3:
-    if wolne_srodki >= 0: st.metric(label="✅ Oszczędności", value=f"{wolne_srodki:,} PLN", delta=f"{procent_oszczednosci:.1f}% pensji")
-    else: st.metric(label="🚨 Deficyt!", value=f"{wolne_srodki:,} PLN", delta="⚠️ Przekroczono limity!", delta_color="inverse")
+    if wolne_srodki >= 0: st.metric(label="✅ Wypracowane Oszczędności", value=f"{wolne_srodki:,.2f} PLN", delta=f"{procent_oszczednosci:.1f}% pensji")
+    else: st.metric(label="🚨 Deficyt Budżetowy!", value=f"{wolne_srodki:,.2f} PLN", delta="⚠️ Przekroczono budżet!", delta_color="inverse")
 
 st.write("---")
 
-# 6. WIZUALIZACJE DANYCH (Wykres po lewej, Tabela pod spodem)
-kolumna_lewa, kolumna_prawa = st.columns(2)
-with kolumna_lewa:
-    st.subheader("🍩 Struktura Podziału Wydatków")
-    
-    # Przygotowanie danych do wykresu i tabeli
-    kategorie = ["🏠 Mieszkanie i opłaty", "🛒 Jedzenie i chemia", "🎉 Rozrywka i przyjemności", "🚗 Transport i paliwo", "🔮 Inne / Niespodziewane"]
-    kwoty = [w_mieszkanie, w_jedzenie, w_rozrywka, w_transport, w_inne]
-    procenty = [(kwota / przychod * 100) if przychod > 0 else 0 for kwota in kwoty]
-    
-    df = pd.DataFrame({
-        "Kategoria kosztów": kategorie, 
-        "Kwota (PLN)": kwoty,
-        "Udział w budżecie": [f"{p:.1f}%" for p in procenty]
-    })
-    
-    fig = px.pie(df, values="Kwota (PLN)", names="Kategoria kosztów", hole=0.45, color_discrete_sequence=px.colors.qualitative.Safe)
+# 6. DYNAMICZNY WYKRES KOLUMNOWY DLA TABELI
+if not edytowana_tabela.empty and suma_wydatkow > 0:
+    st.subheader("📈 Wykres Twoich Kosztów")
+    fig = px.bar(
+        edytowana_tabela, 
+        x="Nazwa wydatku", 
+        y="Kwota (PLN)", 
+        title="Zestawienie kwotowe wprowadzonych pozycji",
+        color="Nazwa wydatku",
+        color_discrete_sequence=px.colors.qualitative.Dark2
+    )
     st.plotly_chart(fig, use_container_width=True)
-
-with kolumna_prawa:
-    st.subheader("🎯 Tracker Celów Oszczędnościowych")
-    nazwa_celu = st.text_input("Na jaki cel odkładasz wolne środki?", value="Poduszka finansowa")
-    kwota_celu = st.number_input("Docelowa kwota do zgromadzenia (PLN):", min_value=1, value=5000)
-    if wolne_srodki > 0:
-        miesiace = kwota_celu / wolne_srodki
-        st.success(f"🎯 Cel: **{nazwa_celu}**. Uzbierasz to za **{miesiace:.1f} mies.**!")
-        st.progress(min(100, int((wolne_srodki / kwota_celu) * 100)) / 100)
-    else: st.error("🚨 Brak wolnych środków na realizację celów!")
+else:
+    st.info("💡 Dodaj chociaż jeden wydatek z kwotą większą od zera w tabeli powyżej, aby zobaczyć wykres.")
 
 st.write("---")
 
-# GADŻET: PROFESJONALNA TABELA WYNIKÓW
-st.subheader("📋 Szczegółowe zestawienie danych w tabeli")
-# Wyświetlamy ładną tabelę przy użyciu Streamlit DataFrame
-st.dataframe(df, use_container_width=True, hide_index=True)
-
-st.write("---")
-# 7. PORADY SYSTEMOWE
-st.subheader("🤖 Cyfrowy Doradca Finansowy BudżetAlfa")
+# 7. CYFROWY DORADCA MARGINA
+st.subheader("🤖 Asystent Finansowy Budżet Domowy")
 if wolne_srodki > 0:
-    if procent_oszczednosci >= 20: st.info(f"💡 **Rekomendacja:** Zarządzasz budżetem świetnie! Odkładasz aż {procent_oszczednosci:.1f}% kapitału.")
-    else: st.warning(f"💡 **Rekomendacja:** Zoptymalizuj koszty rozrywki ({w_rozrywka} PLN), aby szybciej odłożyć na cel.")
-else: st.error("💡 **Rekomendacja:** Krytyczna alokacja środków! Zredukuj wydatki zmienne.")
+    if procent_oszczednosci >= 20: st.info(f"💡 **Rekomendacja:** Zarządzasz budżetem rewelacyjnie! Odkładasz aż {procent_oszczednosci:.1f}% swoich dochodów.")
+    else: st.warning(f"💡 **Rekomendacja:** Twoje oszczędności to {procent_oszczednosci:.1f}% pensji. Przejrzyj tabelę i sprawdź, które pozycje możesz ograniczyć.")
+else: st.error("💡 **Rekomendacja:** Deficyt! Suma pozycji w tabeli przewyższa Twój miesięczny przychód. Zredukuj koszty.")
