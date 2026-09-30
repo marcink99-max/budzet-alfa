@@ -1,5 +1,5 @@
 # =====================================================================
-# SYSTEM FINANSOWY: Budżet Domowy (v2.1 Excel Edition - Poprawiony)
+# SYSTEM FINANSOWY: Budżet Domowy (v2.1 Excel Edition - Finał)
 # Stała aplikacja internetowa | Autor: Marcin
 # =====================================================================
 
@@ -58,7 +58,7 @@ st.caption("💡 Instrukcja: Klikaj w komórki, aby zmienić opisy lub kwoty. Ab
 # Tworzymy obiekt DataFrame z domyślnych wydatków
 df_startowe = pd.DataFrame(domyslne_wydatki)
 
-# Uproszczony i bezpieczny edytor tabeli (Streamlit sam dopasuje kolumny)
+# Uproszczony i bezpieczny edytor tabeli
 edytowana_tabela = st.data_editor(
     df_startowe,
     num_rows="dynamic",
@@ -85,7 +85,7 @@ st.sidebar.download_button(
     mime="application/json"
 )
 
-# ☕ SEKCYJKA ZAPŁATY KAWY W PANELU BOCZNYM
+# ⚙️ SEKCYJKA ZAPŁATY KAWY W PANELU BOCZNYM (TUTAJ WPISAŁEM TWÓJ LINK)
 st.sidebar.write("---")
 st.sidebar.subheader("☕ WESPRZYJ PROJEKT")
 st.sidebar.markdown("[👉 Postaw kawę Marcinowi](https://buycoffee.to)", unsafe_allow_html=True)
