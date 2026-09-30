@@ -1,5 +1,5 @@
 # =====================================================================
-# SYSTEM FINANSOWY: BudżetAlfa (v1.6 PRO z Pamięcią Plików)
+# SYSTEM FINANSOWY: BudżetAlfa (v1.7 PRO z Tabelą Wydatków)
 # Stała aplikacja internetowa | Autor: Marcin
 # =====================================================================
 
@@ -18,21 +18,19 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<p class="main-title">💰 SYSTEM FINANSOWY: BudżetAlfa v1.6 PRO</p>', unsafe_allow_html=True)
+st.markdown('<p class="main-title">💰 SYSTEM FINANSOWY: BudżetAlfa v1.7 PRO</p>', unsafe_allow_html=True)
 st.markdown('<p class="author-tag">Twórca i Główny Programista: Marcin</p>', unsafe_allow_html=True)
 st.write("---")
 
-# 2. GADŻET: SYSTEM ZAPISU I ODCZYTU DANYCH (PAMIĘĆ PROGRAMU)
+# 2. SYSTEM ZAPISU I ODCZYTU DANYCH (PAMIĘĆ PROGRAMU)
 st.sidebar.header("💾 ZAPISZ / WCZYTAJ BUDŻET")
 wgrany_plik = st.sidebar.file_uploader("Masz zapisany budżet? Wgraj go tutaj:", type=["json"])
 
-# Domyślne wartości, jeśli plik nie jest wgrany
 domyslne = {
     "imie": "Marcin", "przychod": 6000, "mieszkanie": 2300, 
     "jedzenie": 1400, "rozrywka": 500, "transport": 400, "inne": 300
 }
 
-# Jeśli użytkownik wgrał plik, nadpisujemy domyślne wartości danymi z pliku
 if wgrany_plik is not None:
     try:
         dane_z_pliku = json.load(wgrany_plik)
@@ -49,13 +47,12 @@ przychod = st.sidebar.number_input("Twój miesięczny przychód na rękę (PLN):
 
 st.sidebar.write("---")
 st.sidebar.subheader("💸 TWOJE MIESIĘCZNE WYDATKI:")
-w_mieszkanie = st.sidebar.slider("🏠 Mieszkanie i opłaty:", 0, 10000, tragedy := int(domyslne["mieszkanie"]), step=50)
+w_mieszkanie = st.sidebar.slider("🏠 Mieszkanie i opłaty:", 0, 10000, int(domyslne["mieszkanie"]), step=50)
 w_jedzenie = st.sidebar.slider("🛒 Jedzenie i chemia:", 0, 5000, int(domyslne["jedzenie"]), step=50)
 w_rozrywka = st.sidebar.slider("🎉 Rozrywka i przyjemności:", 0, 3000, int(domyslne["rozrywka"]), step=50)
 w_transport = st.sidebar.slider("🚗 Transport i paliwo:", 0, 3000, int(domyslne["transport"]), step=50)
 w_inne = st.sidebar.slider("🔮 Inne / Niespodziewane:", 0, 3000, int(domyslne["inne"]), step=50)
 
-# Przygotowanie danych do pobrania
 dane_do_zapisu = {
     "imie": imie_user, "przychod": przychod, "mieszkanie": w_mieszkanie,
     "jedzenie": w_jedzenie, "rozrywka": w_rozrywka, "transport": w_transport, "inne": w_inne
@@ -64,7 +61,7 @@ json_string = json.dumps(dane_do_zapisu)
 
 st.sidebar.write("---")
 st.sidebar.download_button(
-    label="📥 Pobierz i zapisz ten budżet",
+    label="📥 Zapisz ten budżet (Pobierz plik)",
     data=json_string,
     file_name="moj_budzet.json",
     mime="application/json"
@@ -86,12 +83,23 @@ with col3:
 
 st.write("---")
 
-# 6. WIZUALIZACJE DANYCH
+# 6. WIZUALIZACJE DANYCH (Wykres po lewej, Tabela pod spodem)
 kolumna_lewa, kolumna_prawa = st.columns(2)
 with kolumna_lewa:
     st.subheader("🍩 Struktura Podziału Wydatków")
-    df = pd.DataFrame({"Kategoria": ["Mieszkanie", "Jedzenie", "Rozrywka", "Transport", "Inne"], "Kwota (PLN)": [w_mieszkanie, w_jedzenie, w_rozrywka, w_transport, w_inne]})
-    fig = px.pie(df, values="Kwota (PLN)", names="Kategoria", hole=0.45, color_discrete_sequence=px.colors.qualitative.Safe)
+    
+    # Przygotowanie danych do wykresu i tabeli
+    kategorie = ["🏠 Mieszkanie i opłaty", "🛒 Jedzenie i chemia", "🎉 Rozrywka i przyjemności", "🚗 Transport i paliwo", "🔮 Inne / Niespodziewane"]
+    kwoty = [w_mieszkanie, w_jedzenie, w_rozrywka, w_transport, w_inne]
+    procenty = [(kwota / przychod * 100) if przychod > 0 else 0 for kwota in kwoty]
+    
+    df = pd.DataFrame({
+        "Kategoria kosztów": kategorie, 
+        "Kwota (PLN)": kwoty,
+        "Udział w budżecie": [f"{p:.1f}%" for p in procenty]
+    })
+    
+    fig = px.pie(df, values="Kwota (PLN)", names="Kategoria kosztów", hole=0.45, color_discrete_sequence=px.colors.qualitative.Safe)
     st.plotly_chart(fig, use_container_width=True)
 
 with kolumna_prawa:
@@ -103,6 +111,13 @@ with kolumna_prawa:
         st.success(f"🎯 Cel: **{nazwa_celu}**. Uzbierasz to za **{miesiace:.1f} mies.**!")
         st.progress(min(100, int((wolne_srodki / kwota_celu) * 100)) / 100)
     else: st.error("🚨 Brak wolnych środków na realizację celów!")
+
+st.write("---")
+
+# GADŻET: PROFESJONALNA TABELA WYNIKÓW
+st.subheader("📋 Szczegółowe zestawienie danych w tabeli")
+# Wyświetlamy ładną tabelę przy użyciu Streamlit DataFrame
+st.dataframe(df, use_container_width=True, hide_index=True)
 
 st.write("---")
 # 7. PORADY SYSTEMOWE
