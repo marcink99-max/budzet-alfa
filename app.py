@@ -1,5 +1,5 @@
 # =====================================================================
-# SYSTEM FINANSOWY: Budżet Domowy (v2.3 PRO Edition - Finał z Logami)
+# SYSTEM FINANSOWY: Budżet Domowy (v2.4 PRO Edition - Licznik Pobrań)
 # Stała aplikacja internetowa | Autor: Marcin
 # =====================================================================
 
@@ -18,15 +18,18 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<p class="main-title">🏠 SYSTEM FINANSOWY: Budżet Domowy v2.3 PRO</p>', unsafe_allow_html=True)
+st.markdown('<p class="main-title">🏠 SYSTEM FINANSOWY: Budżet Domowy v2.4 PRO</p>', unsafe_allow_html=True)
 st.markdown('<p class="author-tag">Twórca i Główny Programista: Marcin</p>', unsafe_allow_html=True)
 st.write("---")
 
-# SYSTEM LICZNIKA ODSŁON W RAMACH AKTUALNEJ SESJI
+# INICJACJA LICZNIKÓW W PAMIĘCI SESJI
 if "odwiedziny" not in st.session_state:
     st.session_state["odwiedziny"] = 1
 else:
     st.session_state["odwiedziny"] += 1
+
+if "licznik_pobran" not in st.session_state:
+    st.session_state["licznik_pobran"] = 0
 
 # 2. SYSTEM ZAPISU I ODCZYTU DANYCH (PAMIĘĆ PROGRAMU)
 st.sidebar.header("💾 ZAPISZ / WCZYTAJ BUDŻET")
@@ -48,7 +51,6 @@ if wgrany_plik is not None:
         domyslne_imie = dane_z_pliku.get("imie", "Marcin")
         domyslne_wydatki = dane_z_pliku.get("wydatki", domyslne_wydatki)
         st.sidebar.success("✅ Budżet wczytany!")
-        print("📢 LOG: Użytkownik pomyślnie wgrał swój plik konfiguracyjny JSON.")
     except:
         st.sidebar.error("🚨 Błąd wczytywania pliku!")
 
@@ -93,17 +95,22 @@ pobrane_klik = st.sidebar.download_button(
     mime="application/json"
 )
 
-# Rejestracja kliknięcia pobierania w czarnym oknie Logs serwera
+# Jeśli ktoś kliknął, zwiększamy licznik i zapisujemy w pamięci
 if pobrane_klik:
-    print("📢 SUKCES: Użytkownik właśnie pobrał swój plik budżetu na dysk!")
+    st.session_state["licznik_pobran"] += 1
+    print(f"📢 SUKCES: Łączna liczba pobrań wzrosła do: {st.session_state['licznik_pobran']}")
 
-# ☕ SEKCYJKA ZAPŁATY KAWY W PANELU BOCZNYM (BEZPIECZNY LINK HTML)
+# Wyświetlanie zsumowanej liczby pobrań pod przyciskiem
+if st.session_state["licznik_pobran"] > 0:
+    st.sidebar.info(f"📥 Pobrano plik: {st.session_state['licznik_pobran']} raz(y)")
+
+# ☕ SEKCYJKA ZAPŁATY KAWY W PANELU BOCZNYM
 st.sidebar.write("---")
 st.sidebar.subheader("☕ WESPRZYJ PROJEKT")
-link_html = '<a href="https://buycoffee.to/budzet-domowy" target="_blank" style="text-decoration: none; font-weight: bold; color: #2E7D32;">👉 Postaw kawę Marcinowi</a>'
+link_html = '<a href="https://buycoffee.to" target="_blank" style="text-decoration: none; font-weight: bold; color: #2E7D32;">👉 Postaw kawę Marcinowi</a>'
 st.sidebar.markdown(link_html, unsafe_allow_html=True)
 
-# 📊 STATYSTYKI AKTYWNOŚCI NA SAMYM DOLE SIDEBARU
+# STATYSTYKI ODSŁON
 st.sidebar.write("---")
 st.sidebar.caption(f"📈 Odsłony w tej sesji: {st.session_state['odwiedziny']}")
 
@@ -142,4 +149,3 @@ st.subheader("🤖 Asystent Finansowy Budżet Domowy")
 if wolne_srodki > 0:
     if procent_oszczednosci >= 20: st.info(f"💡 **Rekomendacja:** Zarządzasz budżetem rewelacyjnie! Odkładasz aż {procent_oszczednosci:.1f}% swoich dochodów.")
     else: st.warning(f"💡 **Rekomendacja:** Twoje oszczędności to {procent_oszczednosci:.1f}% pensji. Przejrzyj tabelę i sprawdź, które pozycje możesz ograniczyć.")
-else: st.error("💡 **Rekomendacja:** Deficyt! Suma pozycji w tabeli przewyższa Twój miesięczny przychód. Zredukuj koszty.")
