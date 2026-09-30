@@ -88,7 +88,7 @@ st.sidebar.download_button(
 # ☕ SEKCYJKA ZAPŁATY KAWY W PANELU BOCZNYM (BEZPIECZNY LINK HTML)
 st.sidebar.write("---")
 st.sidebar.subheader("☕ WESPRZYJ PROJEKT")
-link_html = '<a href="https://buycoffee.to" target="_blank" style="text-decoration: none; font-weight: bold; color: #2E7D32;">👉 Postaw kawę Marcinowi</a>'
+link_html = '<a href="https://buycoffee.to/budzet-domowy" target="_blank" style="text-decoration: none; font-weight: bold; color: #2E7D32;">👉 Postaw kawę Marcinowi</a>'
 st.sidebar.markdown(link_html, unsafe_allow_html=True)
 
 st.write("---")
