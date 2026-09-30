@@ -1,5 +1,5 @@
 # =====================================================================
-# SYSTEM FINANSOWY: Budżet Domowy (v2.0 Excel Edition)
+# SYSTEM FINANSOWY: Budżet Domowy (v2.1 Excel Edition - Poprawiony)
 # Stała aplikacja internetowa | Autor: Marcin
 # =====================================================================
 
@@ -18,7 +18,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<p class="main-title">🏠 SYSTEM FINANSOWY: Budżet Domowy v2.0</p>', unsafe_allow_html=True)
+st.markdown('<p class="main-title">🏠 SYSTEM FINANSOWY: Budżet Domowy v2.1</p>', unsafe_allow_html=True)
 st.markdown('<p class="author-tag">Twórca i Główny Programista: Marcin</p>', unsafe_allow_html=True)
 st.write("---")
 
@@ -53,21 +53,17 @@ przychod = st.sidebar.number_input("Twój miesięczny przychód na rękę (PLN):
 
 # 4. PANEL GŁÓWNY - EDYTOR W STYLU EXCELA
 st.subheader("📋 Twoja Lista Wydatków (jak w Excelu)")
-st.caption("💡 Możesz klikać w komórki i zmieniać teksty oraz kwoty. Aby dodać nowy wydatek, kliknij ikonę '+' na dole tabeli. Aby usunąć, zaznacz wiersz i naciśnij Delete.")
+st.caption("💡 Instrukcja: Klikaj w komórki, aby zmienić opisy lub kwoty. Aby dodać nowy wydatek (np. kolejną pozycję), kliknij ikonę '+' na samym dole tabeli.")
 
 # Tworzymy obiekt DataFrame z domyślnych wydatków
 df_startowe = pd.DataFrame(domyslne_wydatki)
 
-# Profesjonalny edytor tabeli na żywo
+# Uproszczony i bezpieczny edytor tabeli (Streamlit sam dopasuje kolumny)
 edytowana_tabela = st.data_editor(
     df_startowe,
-    num_rows="dynamic", # Pozwala użytkownikowi na dodawanie/usuwanie wierszy przyciskiem "+"
+    num_rows="dynamic",
     use_container_width=True,
-    hide_index=True,
-    column_config={
-        "Nazwa wydatku": st.column_config.TextColumn("Nazwa wydatku", placeholder="np. Telefon, Paliwo, Kino", required=True),
-        "Kwota (PLN)": st.column_config.NumberColumn("Kwota (PLN)", min_value=0.0, format="%.2f zł", required=True)
-    }
+    hide_index=True
 )
 
 # Konwersja edytowanych danych z powrotem do obliczeń
