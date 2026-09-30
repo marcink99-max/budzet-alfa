@@ -1,5 +1,5 @@
 # =====================================================================
-# SYSTEM FINANSOWY: Budżet Domowy (v2.2 Excel Edition - Finał Link)
+# SYSTEM FINANSOWY: Budżet Domowy (v2.3 PRO Edition - Finał z Logami)
 # Stała aplikacja internetowa | Autor: Marcin
 # =====================================================================
 
@@ -18,9 +18,15 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<p class="main-title">🏠 SYSTEM FINANSOWY: Budżet Domowy v2.2</p>', unsafe_allow_html=True)
+st.markdown('<p class="main-title">🏠 SYSTEM FINANSOWY: Budżet Domowy v2.3 PRO</p>', unsafe_allow_html=True)
 st.markdown('<p class="author-tag">Twórca i Główny Programista: Marcin</p>', unsafe_allow_html=True)
 st.write("---")
+
+# SYSTEM LICZNIKA ODSŁON W RAMACH AKTUALNEJ SESJI
+if "odwiedziny" not in st.session_state:
+    st.session_state["odwiedziny"] = 1
+else:
+    st.session_state["odwiedziny"] += 1
 
 # 2. SYSTEM ZAPISU I ODCZYTU DANYCH (PAMIĘĆ PROGRAMU)
 st.sidebar.header("💾 ZAPISZ / WCZYTAJ BUDŻET")
@@ -42,6 +48,7 @@ if wgrany_plik is not None:
         domyslne_imie = dane_z_pliku.get("imie", "Marcin")
         domyslne_wydatki = dane_z_pliku.get("wydatki", domyslne_wydatki)
         st.sidebar.success("✅ Budżet wczytany!")
+        print("📢 LOG: Użytkownik pomyślnie wgrał swój plik konfiguracyjny JSON.")
     except:
         st.sidebar.error("🚨 Błąd wczytywania pliku!")
 
@@ -78,18 +85,27 @@ procent_oszczednosci = (wolne_srodki / przychod) * 100 if przychod > 0 else 0
 dane_do_zapisu = {"imie": imie_user, "przychod": przychod, "wydatki": lista_wydatkow_wynik}
 json_string = json.dumps(dane_do_zapisu)
 st.sidebar.write("---")
-st.sidebar.download_button(
+
+pobrane_klik = st.sidebar.download_button(
     label="📥 Zapisz ten budżet (Pobierz plik)",
     data=json_string,
     file_name="moj_budzet.json",
     mime="application/json"
 )
 
+# Rejestracja kliknięcia pobierania w czarnym oknie Logs serwera
+if pobrane_klik:
+    print("📢 SUKCES: Użytkownik właśnie pobrał swój plik budżetu na dysk!")
+
 # ☕ SEKCYJKA ZAPŁATY KAWY W PANELU BOCZNYM (BEZPIECZNY LINK HTML)
 st.sidebar.write("---")
 st.sidebar.subheader("☕ WESPRZYJ PROJEKT")
 link_html = '<a href="https://buycoffee.to/budzet-domowy" target="_blank" style="text-decoration: none; font-weight: bold; color: #2E7D32;">👉 Postaw kawę Marcinowi</a>'
 st.sidebar.markdown(link_html, unsafe_allow_html=True)
+
+# 📊 STATYSTYKI AKTYWNOŚCI NA SAMYM DOLE SIDEBARU
+st.sidebar.write("---")
+st.sidebar.caption(f"📈 Odsłony w tej sesji: {st.session_state['odwiedziny']}")
 
 st.write("---")
 
