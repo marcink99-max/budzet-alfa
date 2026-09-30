@@ -1,5 +1,5 @@
 # =====================================================================
-# SYSTEM FINANSOWY: Budżet Domowy (v2.1 Excel Edition - Finał)
+# SYSTEM FINANSOWY: Budżet Domowy (v2.2 Excel Edition - Finał Link)
 # Stała aplikacja internetowa | Autor: Marcin
 # =====================================================================
 
@@ -18,7 +18,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<p class="main-title">🏠 SYSTEM FINANSOWY: Budżet Domowy v2.1</p>', unsafe_allow_html=True)
+st.markdown('<p class="main-title">🏠 SYSTEM FINANSOWY: Budżet Domowy v2.2</p>', unsafe_allow_html=True)
 st.markdown('<p class="author-tag">Twórca i Główny Programista: Marcin</p>', unsafe_allow_html=True)
 st.write("---")
 
@@ -53,7 +53,7 @@ przychod = st.sidebar.number_input("Twój miesięczny przychód na rękę (PLN):
 
 # 4. PANEL GŁÓWNY - EDYTOR W STYLU EXCELA
 st.subheader("📋 Twoja Lista Wydatków (jak w Excelu)")
-st.caption("💡 Instrukcja: Klikaj w komórki, aby zmienić opisy lub kwoty. Aby dodać nowy wydatek (np. kolejną pozycję), kliknij ikonę '+' na samym dole tabeli.")
+st.caption("💡 Instrukcja: Klikaj w komórki, aby zmienić opisy lub kwoty. Aby dodać nowy wydatek, kliknij ikonę '+' na samym dole tabeli.")
 
 # Tworzymy obiekt DataFrame z domyślnych wydatków
 df_startowe = pd.DataFrame(domyslne_wydatki)
@@ -85,10 +85,11 @@ st.sidebar.download_button(
     mime="application/json"
 )
 
-# ⚙️ SEKCYJKA ZAPŁATY KAWY W PANELU BOCZNYM (TUTAJ WPISAŁEM TWÓJ LINK)
+# ☕ SEKCYJKA ZAPŁATY KAWY W PANELU BOCZNYM (BEZPIECZNY LINK HTML)
 st.sidebar.write("---")
 st.sidebar.subheader("☕ WESPRZYJ PROJEKT")
-st.sidebar.markdown("[👉 Postaw kawę Marcinowi](https://buycoffee.to)", unsafe_allow_html=True)
+link_html = '<a href="https://buycoffee.to" target="_blank" style="text-decoration: none; font-weight: bold; color: #2E7D32;">👉 Postaw kawę Marcinowi</a>'
+st.sidebar.markdown(link_html, unsafe_allow_html=True)
 
 st.write("---")
 
